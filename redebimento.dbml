@@ -16,7 +16,6 @@ Project Recebimento {
 
 Table conferente {
   id int [PK, increment]
-  re varchar
   role varchar [note:"Se ele é administrador ou não"]
 }
 
