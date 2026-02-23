@@ -1,0 +1,34 @@
+Project Recebimento {
+   database_type: 'PostgresSQL'
+   Note:'''
+    # Esquema da base de dados de Recebimento
+
+    Esse projeto visa desenvolver um ERD de um aplicativo de cadastro de recebimento para a área da logística
+
+    # Recursos chaves:
+
+    -- **Gerenciamento de usuário**: Para lidar com contas de usuários e autenticação.
+    -- **Gerenciamento de Recebimento**: Vai lidar com o controle de cadastro de mercadorias recebidas
+   '''
+}
+
+//Tabelas
+
+Table conferente {
+  id int [PK, increment]
+  re varchar
+  role varchar [note:"Se ele é administrador ou não"]
+}
+
+Table recebimento {
+    id_recebimento int [PK,increment]
+    nfe_num varchar
+    sku_id varchar [note: "Fará relacionamento com a minha tabela de materiais"]
+    qtd_contada int
+    status_qualidade varchar [note:"OK, Avariado, Divergente"]
+    id_conferente int
+    data_registro timestamp
+}
+
+//Relacionamentos
+Ref: recebimento.id_conferente > conferente.id
