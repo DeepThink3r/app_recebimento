@@ -11,4 +11,3 @@ class ConferenteModel(settings.DBBaseModel):
     nome = Column(String(50), nullable=False)
     sobrenome = Column(String(100), nullable=False)
     eh_admin = Column(Boolean, default=False)
-    
