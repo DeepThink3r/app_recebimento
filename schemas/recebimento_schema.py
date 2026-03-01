@@ -16,7 +16,3 @@ class RecebimentoSchema(BaseModel):
 
 class Config:
     from_attributes = True
-
-
-
-    nfe_num: str

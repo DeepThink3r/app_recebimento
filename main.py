@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from core.configs import settings
 from api.v1.api import api_router
-
+from models import __all_models
 
 app = FastAPI(title='API Recebimento')
 app.include_router(api_router, prefix=settings.API_V1_STR)
