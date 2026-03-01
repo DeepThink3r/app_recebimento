@@ -28,3 +28,13 @@ async def post_recebimento(recebimento: RecebimentoSchema, db: AsyncSession = De
     await db.commit()
 
     return novo_recebimento
+
+#GET NFE
+@router.get('/', response_model=List[RecebimentoSchema])
+async def get_recebimentos(db: AsyncSession = Depends(get_session)):
+    async with db as session:
+        query = select(RecebimentoModel)
+        result = await session.execute(query)
+        recebimentos: List[RecebimentoModel] = result.scalars().unique().all()
+
+        return recebimentos
