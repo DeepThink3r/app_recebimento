@@ -14,5 +14,12 @@ class RecebimentoSchema(BaseModel):
     data_registro: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+class RecebimentoSchemaUpdate(BaseModel):
+    sku_id: Optional[str] = None
+    qtd_contada: Optional[int] = None
+    status_qualidade: Optional[str] = None
+
+
+
 class Config:
     from_attributes = True
