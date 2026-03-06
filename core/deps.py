@@ -8,6 +8,7 @@ from sqlalchemy.future import select
 from pydantic import BaseModel
 
 from core.database import Session
+from core.auth import oauth2_schema
 from core.configs import settings
 from models.conferente_model import ConferenteModel
 
@@ -21,7 +22,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login")
 
 async def get_session() -> AsyncGenerator:
     session: AsyncSession = Session()
@@ -33,7 +33,7 @@ async def get_session() -> AsyncGenerator:
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    token: str = Depends(oauth2_schema),
     session: AsyncSession = Depends(get_session)
 ) -> ConferenteModel:
     credentials_exception = HTTPException(
@@ -51,7 +51,7 @@ async def get_current_user(
     except jwt.PyJWTError:
         raise credentials_exception
     
-    query = select(ConferenteModel).where(ConferenteModel.nome == token_data.username)
+    query = select(ConferenteModel).where(ConferenteModel.re == token_data.username)
     result = await session.execute(query)
     user: ConferenteModel = result.scalars().first()
     
