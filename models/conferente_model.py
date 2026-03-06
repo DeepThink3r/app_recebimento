@@ -8,6 +8,7 @@ class ConferenteModel(settings.DBBaseModel):
     __tablename__ = 'conferente'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    re = Column(Integer, nullable=False)
     nome = Column(String(50), nullable=False)
     sobrenome = Column(String(100), nullable=False)
     senha = Column(String(255), nullable=False)
