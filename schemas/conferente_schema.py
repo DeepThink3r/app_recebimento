@@ -1,7 +1,11 @@
 from pydantic import BaseModel
+from typing import Optional, List
+
+from schemas.recebimento_schema import RecebimentoSchema
 
 
-class ConferenteSchema(BaseModel):
+
+class ConferenteShemaBase(BaseModel):
     id: int
     re: int
     nome: str
@@ -12,3 +16,17 @@ class ConferenteSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ConferenteSchemaCreate(BaseModel):
+    senha: str
+
+class ConferenteSchemaRecebimento(ConferenteShemaBase):
+    recebimentos: Optional[List[RecebimentoSchema]]
+
+
+class ConferenteSchemaUpdate(BaseModel):
+    re: Optional[int] = None
+    nome: Optional[str] = None
+    sobrenome: Optional[str] = None
+    senha: Optional[str] = None
+    eh_admin: Optional[bool] = None

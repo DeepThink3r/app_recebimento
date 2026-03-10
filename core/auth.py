@@ -34,7 +34,7 @@ async def autenticar(re: int, senha: str, db: AsyncSession) -> Optional[Conferen
         return usuario
     
     
-def criar_token(sub: str, tempo_vida: timedelta, tipo_token: str = "access") -> str:
+def _criar_token(sub: str, tempo_vida: timedelta, tipo_token: str = "access") -> str:
     """
     Cria um JWT seguindo a RFC 7519.
     
@@ -55,6 +55,14 @@ def criar_token(sub: str, tempo_vida: timedelta, tipo_token: str = "access") -> 
     
     return jwt.encode(
         payload, 
-        settings.JWT_SECRET, 
+        settings.SECRET_KEY, 
         algorithm=settings.ALGORITHM
+    )
+
+
+def criar_token_acesso(sub: str) -> str:
+    return _criar_token(
+        sub=sub,
+        tempo_vida=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        tipo_token="access"
     )
