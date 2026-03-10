@@ -2,12 +2,14 @@ from typing import List
 
 from fastapi import APIRouter, status, Depends, HTTPException, Response
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from models.recebimento_model import RecebimentoModel
+from models.conferente_model import ConferenteModel
 from schemas.recebimento_schema import RecebimentoSchema, RecebimentoSchemaUpdate
-from core.deps import get_session
+from core.deps import get_session, get_current_user
 
 
 router = APIRouter()
@@ -15,7 +17,7 @@ router = APIRouter()
 
 #POST NFE
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=RecebimentoSchema)
-async def post_recebimento(recebimento: RecebimentoSchema, db: AsyncSession = Depends(get_session)):
+async def post_recebimento(recebimento: RecebimentoSchema, usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     novo_recebimento: RecebimentoModel = RecebimentoModel(
         nfe_num=recebimento.nfe_num,
         sku_id=recebimento.sku_id,
@@ -24,14 +26,17 @@ async def post_recebimento(recebimento: RecebimentoSchema, db: AsyncSession = De
         id_conferente=recebimento.id_conferente
     )
 
-    db.add(novo_recebimento)
-    await db.commit()
+    try:
+        db.add(novo_recebimento)
+        await db.commit()
+    except IntegrityError:
+        raise HTTPException(detail='Conferente informado não encontrado na base de dados', status_code=status.HTTP_406_NOT_ACCEPTABLE)
 
     return novo_recebimento
 
 #GET RECEBIMENTOS
 @router.get('/', response_model=List[RecebimentoSchema])
-async def get_recebimentos(db: AsyncSession = Depends(get_session)):
+async def get_recebimentos(usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(RecebimentoModel)
         result = await session.execute(query)
@@ -42,7 +47,7 @@ async def get_recebimentos(db: AsyncSession = Depends(get_session)):
 
 #GET RECEBIMENTO
 @router.get('/{id_recebimento}', status_code=status.HTTP_200_OK, response_model=RecebimentoSchema)
-async def get_recebimento(id_recebimento: int, db: AsyncSession = Depends(get_session)):
+async def get_recebimento(id_recebimento: int, usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(RecebimentoModel).where(RecebimentoModel.id_recebimento == id_recebimento)
         result = await session.execute(query)
@@ -56,7 +61,7 @@ async def get_recebimento(id_recebimento: int, db: AsyncSession = Depends(get_se
         
 #PATCH RECEBIMENTO
 @router.patch('/{id_recebimento}', status_code=status.HTTP_200_OK, response_model=RecebimentoSchema)
-async def patch_recebimento(id_recebimento: int, recebimento: RecebimentoSchemaUpdate, db: AsyncSession = Depends(get_session)):
+async def patch_recebimento(id_recebimento: int, recebimento: RecebimentoSchemaUpdate, usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(RecebimentoModel).where(RecebimentoModel.id_recebimento == id_recebimento)
         result = await session.execute(query)
@@ -77,7 +82,7 @@ async def patch_recebimento(id_recebimento: int, recebimento: RecebimentoSchemaU
 
 #DELETE RECEBIMENTO
 @router.delete('/{id_recebimento}', status_code=status.HTTP_204_NO_CONTENT)
-async def del_recebimento(id_recebimento: int, db: AsyncSession = Depends(get_session)):
+async def del_recebimento(id_recebimento: int, usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(RecebimentoModel).where(RecebimentoModel.id_recebimento == id_recebimento)
         result = await session.execute(query)

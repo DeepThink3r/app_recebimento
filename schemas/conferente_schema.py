@@ -5,12 +5,11 @@ from schemas.recebimento_schema import RecebimentoSchema
 
 
 
-class ConferenteShemaBase(BaseModel):
+class ConferenteSchemaBase(BaseModel):
     id: int
     re: int
     nome: str
     sobrenome: str
-    senha: str
     eh_admin: bool
 
 
@@ -18,9 +17,13 @@ class ConferenteShemaBase(BaseModel):
         from_attributes = True
 
 class ConferenteSchemaCreate(BaseModel):
+    re: int
+    nome: str
+    sobrenome: str
     senha: str
+    eh_admin: bool = False
 
-class ConferenteSchemaRecebimento(ConferenteShemaBase):
+class ConferenteSchemaRecebimento(ConferenteSchemaBase):
     recebimentos: Optional[List[RecebimentoSchema]]
 
 

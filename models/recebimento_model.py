@@ -15,7 +15,7 @@ class RecebimentoModel(settings.DBBaseModel):
     sku_id = Column(String(100), nullable=False)
     qtd_contada = Column(Integer, nullable=False)
     status_qualidade = Column(String(50), nullable=False)
-    id_conferente = Column(Integer, ForeignKey('conferente.id'))
+    re_conferente = Column(Integer, ForeignKey('conferente.id'))
     data_registro = Column(
         DateTime(timezone=True), 
         nullable=False,

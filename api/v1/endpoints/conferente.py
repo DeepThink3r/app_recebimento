@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from models.conferente_model import ConferenteModel
-from schemas.conferente_schema import ConferenteSchemaCreate, ConferenteSchemaRecebimento, ConferenteSchemaUpdate, ConferenteShemaBase
+from schemas.conferente_schema import ConferenteSchemaCreate, ConferenteSchemaRecebimento, ConferenteSchemaUpdate, ConferenteSchemaBase
 from core.deps import get_session, get_current_user
 from core.security import gerar_hash_senha
 from core.auth import autenticar, criar_token_acesso
@@ -19,13 +19,13 @@ router = APIRouter()
 
 
 #GET Logado
-@router.get('/logado', response_model=ConferenteShemaBase)
+@router.get('/logado', response_model=ConferenteSchemaBase)
 async def get_logado(conferente_logado: ConferenteModel = Depends(get_current_user)):
     return conferente_logado
 
 
 #POST / Sign Up
-@router.post('/signup', status_code=status.HTTP_201_CREATED, response_model=ConferenteShemaBase)
+@router.post('/signup', status_code=status.HTTP_201_CREATED, response_model=ConferenteSchemaBase)
 async def post_conferente(conferente: ConferenteSchemaCreate, db: AsyncSession = Depends(get_session)):
     novo_conferente: ConferenteModel = ConferenteModel(nome=conferente.nome, sobrenome=conferente.sobrenome, re=conferente.re, senha=gerar_hash_senha(conferente.senha), eh_admin=conferente.eh_admin)
 
@@ -40,7 +40,7 @@ async def post_conferente(conferente: ConferenteSchemaCreate, db: AsyncSession =
 
 
 #GET Conferentes
-@router.get('/', response_model=List[ConferenteShemaBase])
+@router.get('/', response_model=List[ConferenteSchemaBase])
 async def get_conferentes(db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(ConferenteModel)
@@ -66,7 +66,7 @@ async def get_conferentes(conferente_id: int, db: AsyncSession = Depends(get_ses
         
 
 #PUT Conferente
-@router.put('/{conferente_id}', response_model=ConferenteShemaBase, status_code=status.HTTP_200_OK)
+@router.put('/{conferente_id}', response_model=ConferenteSchemaBase, status_code=status.HTTP_200_OK)
 async def put_conferente(conferente_id: int, conferente: ConferenteSchemaUpdate, db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)

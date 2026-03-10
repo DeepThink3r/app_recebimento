@@ -34,7 +34,7 @@ async def get_session() -> AsyncGenerator:
 
 async def get_current_user(
     token: str = Depends(oauth2_schema),
-    db: Session = Depends(get_session) # type: ignore
+    db: AsyncSession = Depends(get_session)
 ) -> ConferenteModel:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
