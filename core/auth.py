@@ -14,7 +14,7 @@ from core.security import verificar_senha
 
 
 oauth2_schema = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/conferentes/login"
+    tokenUrl=f"{settings.API_V1_STR}/conferente/login"
 )
 
 async def autenticar(re: int, senha: str, db: AsyncSession) -> Optional[ConferenteModel]:
