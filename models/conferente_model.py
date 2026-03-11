@@ -1,0 +1,15 @@
+from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
+
+from core.configs import settings
+
+
+class ConferenteModel(settings.DBBaseModel):
+    __tablename__ = 'conferente'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    re = Column(Integer, nullable=False, unique=True)
+    nome = Column(String(50), nullable=False)
+    sobrenome = Column(String(100), nullable=False)
+    senha = Column(String(255), nullable=False)
+    eh_admin = Column(Boolean, default=False)
