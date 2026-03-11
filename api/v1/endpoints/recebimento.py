@@ -8,7 +8,7 @@ from sqlalchemy.future import select
 
 from models.recebimento_model import RecebimentoModel
 from models.conferente_model import ConferenteModel
-from schemas.recebimento_schema import RecebimentoSchema, RecebimentoSchemaUpdate
+from schemas.recebimento_schema import RecebimentoSchema, RecebimentoSchemaUpdate, RecebimentoSchemaCreate
 from core.deps import get_session, get_current_user
 
 
@@ -17,20 +17,21 @@ router = APIRouter()
 
 #POST NFE
 @router.post('/', status_code=status.HTTP_201_CREATED, response_model=RecebimentoSchema)
-async def post_recebimento(recebimento: RecebimentoSchema, usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
+async def post_recebimento(recebimento: RecebimentoSchemaCreate, usuario_logado: ConferenteModel = Depends(get_current_user), db: AsyncSession = Depends(get_session)):
     novo_recebimento: RecebimentoModel = RecebimentoModel(
         nfe_num=recebimento.nfe_num,
         sku_id=recebimento.sku_id,
         qtd_contada=recebimento.qtd_contada,
         status_qualidade=recebimento.status_qualidade,
-        re_conferente=recebimento.re_conferente
+        id_conferente=usuario_logado.id
     )
 
     try:
         db.add(novo_recebimento)
         await db.commit()
+        await db.refresh(novo_recebimento)
     except IntegrityError:
-        raise HTTPException(detail='Conferente informado não encontrado na base de dados', status_code=status.HTTP_406_NOT_ACCEPTABLE)
+        raise HTTPException(detail='Conferente ou Status informado não encontrado na base de dados', status_code=status.HTTP_406_NOT_ACCEPTABLE)
 
     return novo_recebimento
 

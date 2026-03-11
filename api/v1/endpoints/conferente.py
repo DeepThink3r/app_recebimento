@@ -27,88 +27,84 @@ async def get_logado(conferente_logado: ConferenteModel = Depends(get_current_us
 #POST / Sign Up
 @router.post('/signup', status_code=status.HTTP_201_CREATED, response_model=ConferenteSchemaBase)
 async def post_conferente(conferente: ConferenteSchemaCreate, db: AsyncSession = Depends(get_session)):
+    query = select(ConferenteModel).where(ConferenteModel.re == conferente.re)
+    result = await db.execute(query)
+    if result.scalars().first():
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Já existe um conferente com esse RE cadastrado')
+
     novo_conferente: ConferenteModel = ConferenteModel(nome=conferente.nome, sobrenome=conferente.sobrenome, re=conferente.re, senha=gerar_hash_senha(conferente.senha), eh_admin=conferente.eh_admin)
 
-    async with db as session:
-        try:
-            session.add(novo_conferente)
-            await session.commit()
+    db.add(novo_conferente)
+    await db.commit()
 
-            return novo_conferente
-        except sqlalchemy.exc.IntegrityError:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Já existe um conferente com esse RE cadastrado')
+    return novo_conferente
 
 
 #GET Conferentes
 @router.get('/', response_model=List[ConferenteSchemaBase])
 async def get_conferentes(db: AsyncSession = Depends(get_session)):
-    async with db as session:
-        query = select(ConferenteModel)
-        result = await session.execute(query)
-        conferentes: List[ConferenteModel] = result.scalars().unique().all()
+    query = select(ConferenteModel)
+    result = await db.execute(query)
+    conferentes: List[ConferenteModel] = result.scalars().unique().all()
 
-        return conferentes
+    return conferentes
 
 
 #GET Conferente
 @router.get('/{conferente_id}', response_model=ConferenteSchemaRecebimento, status_code=status.HTTP_200_OK)
 async def get_conferente(conferente_id: int, db: AsyncSession = Depends(get_session)):
-    async with db as session:
-        query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
-        result = await session.execute(query)
-        conferente: ConferenteModel = result.scalars().unique().one_or_none()
+    query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
+    result = await db.execute(query)
+    conferente: ConferenteModel = result.scalars().unique().one_or_none()
 
-        if conferente:
-            return conferente
-        
-        else:
-            raise HTTPException(detail='Conferente não encontrado', status_code=status.HTTP_404_NOT_FOUND)
+    if conferente:
+        return conferente
+    
+    else:
+        raise HTTPException(detail='Conferente não encontrado', status_code=status.HTTP_404_NOT_FOUND)
         
 
 #PUT Conferente
 @router.put('/{conferente_id}', response_model=ConferenteSchemaBase, status_code=status.HTTP_200_OK)
 async def put_conferente(conferente_id: int, conferente: ConferenteSchemaUpdate, db: AsyncSession = Depends(get_session)):
-    async with db as session:
-        query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
-        result = await session.execute(query)
-        conferente_up: ConferenteModel = result.scalars().unique().one_or_none()
+    query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
+    result = await db.execute(query)
+    conferente_up: ConferenteModel = result.scalars().unique().one_or_none()
 
-        if not conferente_up:
-            raise HTTPException(detail='Conferente não encontrado', status_code=status.HTTP_404_NOT_FOUND)
-        
-        update_data = conferente.model_dump(exclude_unset=True)
+    if not conferente_up:
+        raise HTTPException(detail='Conferente não encontrado', status_code=status.HTTP_404_NOT_FOUND)
+    
+    update_data = conferente.model_dump(exclude_unset=True)
 
-        for key, value in update_data.items():
-            if key == 'senha':
-                # Special handling for the password field
-                setattr(conferente_up, key, gerar_hash_senha(value))
-            else:
-                # For all other fields, update directly
-                setattr(conferente_up, key, value)
-        
-        try:
-            await session.commit()
-            await session.refresh(conferente_up)
-            return conferente_up
-        except sqlalchemy.exc.IntegrityError:
-            raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Já existe um conferente com esse RE cadastrado')
+    for key, value in update_data.items():
+        if key == 'senha':
+            setattr(conferente_up, key, gerar_hash_senha(value))
+        else:
+            setattr(conferente_up, key, value)
+    
+    # A verificação de integridade no commit pode pegar duplicatas se o RE for alterado
+    try:
+        await db.commit()
+        await db.refresh(conferente_up)
+        return conferente_up
+    except sqlalchemy.exc.IntegrityError:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail='Já existe um conferente com esse RE cadastrado')
 
 
 #DELETE Conferente
 @router.delete('/{conferente_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_conferente(conferente_id: int, db: AsyncSession = Depends(get_session)):
-    async with db as session:
-        query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
-        result = await session.execute(query)
-        conferente_del: ConferenteModel = result.scalars().unique().one_or_none()
+    query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
+    result = await db.execute(query)
+    conferente_del: ConferenteModel = result.scalars().unique().one_or_none()
 
-        if not conferente_del:
-            raise HTTPException(detail='Conferente não encontrado', status_code=status.HTTP_404_NOT_FOUND)
-        
-        await session.delete(conferente_del)
-        await session.commit()
+    if not conferente_del:
+        raise HTTPException(detail='Conferente não encontrado', status_code=status.HTTP_404_NOT_FOUND)
+    
+    await db.delete(conferente_del)
+    await db.commit()
 
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
     
 
 #POST Login
