@@ -1,7 +1,5 @@
-from pytz import timezone
-
 from typing import Optional, List, Any, Dict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi.security import OAuth2PasswordBearer
 
@@ -16,22 +14,21 @@ from core.security import verificar_senha
 
 
 oauth2_schema = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/usuarios/login"
+    tokenUrl=f"{settings.API_V1_STR}/conferentes/login"
 )
 
 async def autenticar(re: int, senha: str, db: AsyncSession) -> Optional[ConferenteModel]:
-    async with db as session:
-        query = select(ConferenteModel).where(ConferenteModel.re == re)
-        result = await session.execute(query)
-        usuario: ConferenteModel = result.scalars().unique().one_or_none()
+    query = select(ConferenteModel).where(ConferenteModel.re == re)
+    result = await db.execute(query)
+    usuario: ConferenteModel = result.scalars().unique().one_or_none()
 
-        if not usuario:
-            return None
-        
-        if not verificar_senha(senha, usuario.senha):
-            return None
-        
-        return usuario
+    if not usuario:
+        return None
+    
+    if not verificar_senha(senha, usuario.senha):
+        return None
+    
+    return usuario
     
     
 def _criar_token(sub: str, tempo_vida: timedelta, tipo_token: str = "access") -> str:

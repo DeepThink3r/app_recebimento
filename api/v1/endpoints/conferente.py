@@ -52,7 +52,7 @@ async def get_conferentes(db: AsyncSession = Depends(get_session)):
 
 #GET Conferente
 @router.get('/{conferente_id}', response_model=ConferenteSchemaRecebimento, status_code=status.HTTP_200_OK)
-async def get_conferentes(conferente_id: int, db: AsyncSession = Depends(get_session)):
+async def get_conferente(conferente_id: int, db: AsyncSession = Depends(get_session)):
     async with db as session:
         query = select(ConferenteModel).where(ConferenteModel.id == conferente_id)
         result = await session.execute(query)
@@ -114,7 +114,12 @@ async def delete_conferente(conferente_id: int, db: AsyncSession = Depends(get_s
 #POST Login
 @router.post('/login')
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_session)):
-    usuario = await autenticar(int(form_data.username), form_data.password, db)
+    try:
+        re = int(form_data.username)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='O campo username deve conter o RE (numérico)')
+        
+    usuario = await autenticar(re, form_data.password, db)
 
     if not usuario:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Dados de acesso incorretos')

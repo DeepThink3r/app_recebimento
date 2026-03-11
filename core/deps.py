@@ -51,12 +51,11 @@ async def get_current_user(
     except jwt.PyJWTError:
         raise credentials_exception
     
-    async with db as session:
-        query = select(ConferenteModel).where(ConferenteModel.re == token_data.username)
-        result = await session.execute(query)
-        usuario: ConferenteModel = result.scalars().first()
-        
-        if usuario is None:
-            raise credentials_exception
+    query = select(ConferenteModel).where(ConferenteModel.re == int(token_data.username))
+    result = await db.execute(query)
+    usuario: ConferenteModel = result.scalars().first()
+    
+    if usuario is None:
+        raise credentials_exception
             
     return usuario

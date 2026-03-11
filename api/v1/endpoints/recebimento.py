@@ -23,7 +23,7 @@ async def post_recebimento(recebimento: RecebimentoSchema, usuario_logado: Confe
         sku_id=recebimento.sku_id,
         qtd_contada=recebimento.qtd_contada,
         status_qualidade=recebimento.status_qualidade,
-        id_conferente=recebimento.id_conferente
+        re_conferente=recebimento.re_conferente
     )
 
     try:
