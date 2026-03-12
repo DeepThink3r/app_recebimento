@@ -1,6 +1,5 @@
 from typing import AsyncGenerator, Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 import jwt
 
 from sqlalchemy.ext.asyncio import AsyncSession
