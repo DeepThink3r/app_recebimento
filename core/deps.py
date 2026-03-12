@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator
 from fastapi import Depends, HTTPException, status
 import jwt
 
